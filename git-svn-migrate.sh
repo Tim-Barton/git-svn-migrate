@@ -214,7 +214,7 @@ do
   # Push to final bare repository and remove temp repository.
   echo "- Pushing to new bare repository..." >&2;
   git remote add bare $destination/$name.git;
-  git config remote.bare.push 'refs/remotes/*:refs/heads/*';
+  git config remote.bare.push 'refs/remotes/origin/*:refs/heads/*';
   git push bare;
   # Push the .gitignore commit that resides on master.
   git push bare master:trunk;
