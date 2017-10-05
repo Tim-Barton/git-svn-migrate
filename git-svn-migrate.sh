@@ -234,7 +234,7 @@ do
 
   # Convert git-svn tag branches to proper tags.
   echo "- Converting svn tag directories to proper git tags..." >&2;
-  git for-each-ref --format='%(refname)' refs/heads/tags | cut -d / -f 4 |
+  git for-each-ref --format='%(refname)' refs/heads/tags | cut -d / -f 4- |
   while read ref
   do
     git tag -a "$ref" -m "Convert \"$ref\" to a proper git tag." "refs/heads/tags/$ref";
