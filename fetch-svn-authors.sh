@@ -125,8 +125,8 @@ tmp_file="tmp-authors-transform.txt";
 while read line
 do
   # Check for 2-field format:  Name [tab] URL
-  name=`echo $line | awk '{print $1}'`;
-  url=`echo $line | awk '{print $2}'`;
+  url=`echo $line | awk '{print $1}'`;
+  name=`echo $line | awk '{print $2}'`;
   # Check for simple 1-field format:  URL
   if [[ $url == '' ]]; then
     url=$name;
