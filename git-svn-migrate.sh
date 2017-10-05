@@ -58,11 +58,6 @@ NAME
 \n\t\tarchives. Use this option to get rid of that data. See git svn --help for
 \n\t\ta fuller discussion on this option.
 \n
-\n\t--no-stdlayout
-\n\t\tBy default, $script passes the --stdlayout option to
-\n\t\tgit-svn clone. This option suppresses that behavior. See git svn --help
-\n\t\tfor more information.
-\n
 \n\t--shared[=(false|true|umask|group|all|world|everybody|0xxx)]
 \n\t\tSpecify that the generated git repositories are to be shared amongst
 \n\t\tseveral users. See git init --help for more info about this option.
@@ -129,7 +124,6 @@ until [[ -z "$1" ]]; do
     destination )     destination=$value;;
     i )               ignore_file=$value;;
     ignore-file )     ignore_file=$value;;
-    no-stdlayout )    no_stdlayout="true";;
     shared )          if [[ $value == '' ]]; then
                         gitinit_params="--shared";
                       else
@@ -181,14 +175,14 @@ if [[ -e $tmp_destination ]]; then
   echo "Temporary repository location \"$tmp_destination\" already exists. Exiting." >&2;
   exit 1;
 fi
-while read line
+sed -e 's/#.*//; /^[[:space:]]*$/d' $url_file | while read line
 do
   # Check for 2-field format:  Name [tab] URL
-  name=`echo $line | awk '{print $1}'`;
-  url=`echo $line | awk '{print $2}'`;
+  url=`echo $line | awk '{print $1}'`;
+  name=`echo $line | awk '{print $2}'`;
+  extra_args=`echo $line | awk '{ORS=" "; for (y=3; y<=NF; y++) print $y}'`;
   # Check for simple 1-field format:  URL
-  if [[ $url == '' ]]; then
-    url=$name;
+  if [[ $name == '' ]]; then
     name=`basename $url`;
   fi
   # Process each Subversion URL.
@@ -205,14 +199,7 @@ do
   # Clone the original Subversion repository to a temp repository.
   cd $pwd;
   echo "- Cloning repository..." >&2;
-  git_svn_clone="git svn clone $url -A $authors_file --authors-prog=$dir/svn-lookup-author.sh";
-
-  if [[ -z $no_stdlayout ]]; then
-    git_svn_clone="$git_svn_clone --stdlayout";
-  fi
-
-  git_svn_clone="$git_svn_clone --quiet $gitsvn_params $tmp_destination";
-  $git_svn_clone;
+  git svn clone $url -A $authors_file --authors-prog=$dir/svn-lookup-author.sh --quiet $gitsvn_params $extra_args $tmp_destination;
 
   # Create .gitignore file.
   echo "- Converting svn:ignore properties into a .gitignore file..." >&2;
@@ -255,4 +242,4 @@ do
   done
 
   echo "- Conversion completed at $(date)." >&2;
-done < $url_file
+done
