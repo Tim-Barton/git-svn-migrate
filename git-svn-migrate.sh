@@ -181,10 +181,13 @@ do
   url=`echo $line | awk '{print $1}'`;
   name=`echo $line | awk '{print $2}'`;
   extra_args=`echo $line | awk '{ORS=" "; for (y=3; y<=NF; y++) print $y}'`;
+  echo $extra_args
   # Check for simple 1-field format:  URL
   if [[ $name == '' ]]; then
     name=`basename $url`;
+    extra_args='--stdlayout'
   fi
+  echo $extra_args
   # Process each Subversion URL.
   echo >&2;
   echo "At $(date)..." >&2;
@@ -199,7 +202,9 @@ do
   # Clone the original Subversion repository to a temp repository.
   cd $pwd;
   echo "- Cloning repository..." >&2;
+  set -x
   git svn clone $url -A $authors_file --authors-prog=$dir/svn-lookup-author.sh --quiet $gitsvn_params $extra_args $tmp_destination;
+  set +x
 
   # Create .gitignore file.
   echo "- Converting svn:ignore properties into a .gitignore file..." >&2;
@@ -209,7 +214,7 @@ do
   cd $tmp_destination;
   git svn show-ignore --id trunk >> .gitignore;
   git add .gitignore;
-  git commit --author="git-svn-migrate <nobody@example.org>" -m 'Convert svn:ignore properties to .gitignore.';
+  git commit -m 'NOTICKET Convert svn:ignore properties to .gitignore.';
 
   # Push to final bare repository and remove temp repository.
   echo "- Pushing to new bare repository..." >&2;
